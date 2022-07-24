@@ -128,7 +128,6 @@ Trends in individual user weight show relatively stable values with little chang
 What is apparent is the inconsistency in tracking overall. Only eight of the thirty three users involved in the study tracked their weight. Of those eight, only two were consistent in recording their values. Further research should be done into how to motive users to engage with this feature. 
 ```{r weight analysis}
 weight_table <- read_csv("Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
-# FIXIT: needs to group dates by week before plotting
 weight_table <- weight_table %>% mutate(Date = mdy_hms(weight_table$Date))
 str(weight_table)
 weight_table %>%
