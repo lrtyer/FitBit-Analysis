@@ -25,20 +25,23 @@ output for a range of bio metrics, courtesy of Mobius.
 
   Data set assessed for type errors, range constraints, and full duplicates. Due to the data being derived from each participants daily metrics, partial duplicates are inherent to the data set.
 
-```{r preparation}
-# load csvs
-activity <- read_csv("Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
-sleep <- read_csv("Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
-# convert ActivityDate column into date object
-activity_fixed <- activity %>% mutate(ActivityDate = mdy(activity$ActivityDate))
-sleep_fixed <- sleep %>% mutate(SleepDay = mdy_hms(sleep$SleepDay))
+```{r data preparation}
+# load data
+activity_table <- read_csv("Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
+sleep_table <- read_csv("Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+weight_table <- read_csv("Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
+# convert dates into appropriate object
+activity_table <- activity_table %>% mutate(ActivityDate = mdy(activity$ActivityDate))
+sleep_table <- sleep_table %>% mutate(SleepDay = mdy_hms(sleep$SleepDay))
+weight_table <- weight_table %>% mutate(Date = mdy_hms(weight_table$Date))
 # check for full duplicates
-sum(duplicated(activity_fixed))
-sum(duplicated(sleep_fixed)) # returns 3 duplicated rows
+sum(duplicated(activity_table))
+sum(duplicated(sleep_table)) # returns 3 duplicated rows
+sum(duplicated(weight_table))
 # identify and remove duplicates
-filter(sleep_fixed, duplicated(sleep_fixed))
-sleep_fixed <- distinct(sleep_fixed)
-sum(duplicated(sleep_fixed))
+filter(sleep_table, duplicated(sleep_table))
+sleep_table <- distinct(sleep_table)
+sum(duplicated(sleep_table))
 ```
 
 ## Analysis Summary
@@ -127,9 +130,6 @@ Trends in individual user weight show relatively stable values with little chang
 
 What is apparent is the inconsistency in tracking overall. Only eight of the thirty three users involved in the study tracked their weight. Of those eight, only two were consistent in recording their values. Further research should be done into how to motive users to engage with this feature. 
 ```{r weight analysis}
-weight_table <- read_csv("Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
-weight_table <- weight_table %>% mutate(Date = mdy_hms(weight_table$Date))
-str(weight_table)
 weight_table %>%
   ggplot(aes(x = Date, y = WeightPounds, group = Id)) +
     geom_line() +
