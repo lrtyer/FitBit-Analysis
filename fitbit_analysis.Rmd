@@ -1,0 +1,136 @@
+---
+title: "Bellabeat Case Study"
+author: "Levi Tyer"
+date: '2022-07-04'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# load library dependencies
+library(tidyverse)
+library(lubridate)
+```
+
+## Business Case:
+
+  Bellabeat wants to gain a greater foothold in the wearable fitness tracker
+marketplace by understanding how women use competing products. The company is interested in usage trends for competing products. They would like to apply the findings from this analysis to one of their existing products to drive sales and increase customer base.
+
+
+## Data Preparation
+
+  01: FitBit Fitness Tracker Data: A public data set containing continuous
+output for a range of bio metrics, courtesy of Mobius.
+
+  Data set assessed for type errors, range constraints, and full duplicates. Due to the data being derived from each participants daily metrics, partial duplicates are inherent to the data set.
+
+```{r preparation}
+# load csvs
+activity <- read_csv("Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
+sleep <- read_csv("Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+# convert ActivityDate column into date object
+activity_fixed <- activity %>% mutate(ActivityDate = mdy(activity$ActivityDate))
+sleep_fixed <- sleep %>% mutate(SleepDay = mdy_hms(sleep$SleepDay))
+# check for full duplicates
+sum(duplicated(activity_fixed))
+sum(duplicated(sleep_fixed)) # returns 3 duplicated rows
+# identify and remove duplicates
+filter(sleep_fixed, duplicated(sleep_fixed))
+sleep_fixed <- distinct(sleep_fixed)
+sum(duplicated(sleep_fixed))
+```
+
+## Analysis Summary
+  Summary statistics for the activity_fixed table. Approximately 8.19% of entries contain a total of 0 steps, suggesting that the device was worn for the given day. Curiously, 0.21% (or 7 rows) of the observations record the daily maximum of sedentary minutes while also having tracked steps. The discrepancy could perhaps be do to the way the device calculates the two metrics.
+  
+```{r Analysis}
+# general table stats
+n_distinct(activity_fixed$Id)
+row_count <- nrow(activity_fixed)
+# summary statistics for columns of interest
+activity_fixed %>%
+  select(TotalSteps,
+         TotalDistance,
+         SedentaryMinutes) %>%
+  summary()
+
+sleep_fixed %>%  
+  select(TotalSleepRecords,
+  TotalMinutesAsleep,
+  TotalTimeInBed) %>%
+  summary()
+# count of rows that suggests device wasn't worn for given day
+zero_steps_count <- count(activity_fixed %>%
+  filter(TotalSteps == 0))
+# count of rows that record max amount of sedentary minutes
+sedentary_max <- count(activity_fixed %>%
+  filter(SedentaryMinutes == 1440))
+# find percentage of days that device possibly wasn't worn
+zero_steps_percentage <- (zero_steps_count / row_count) * 100
+sedentary_max_percentage <- (sedentary_max / row_count) * 100
+# assess difference between the two metrics
+sedentary_max_percentage - zero_steps_percentage
+# find rows with the max sedentary minutes that somehow also have steps
+activity_fixed %>%
+  filter(TotalSteps != 0 & SedentaryMinutes == 1440)
+```
+
+
+## Visuals and Findings
+When comparing steps taken to sedentary minutes, it appears that there isn't necessarily an inverse relationship between the two. The data shows that during more sedentary days, users still often track roughly similar steps as less sedentary days, suggesting that a lot of people likely have long periods of inactivity with bouts of movement in between. The data point coloring shows that rather than have two main clusters of separate users, each users tends to have varying activity.
+
+```{r}
+ggplot(data=activity_fixed, aes(x=TotalSteps, y=SedentaryMinutes, color=Id)) + geom_point() 
+```
+
+The time that users spend in bed correlates fairly well with the amount of sleep they achieved. There are some notable groupings that stand out from this linear progression, however. The standouts are consistent in that the time they spend in bed equates to less than the average amount of sleep. It is likely that these divergent data points are due to either struggles to sleep or lounging. Here, we see that the deviant data points are from a particular subset of users as identified by their ID colors. These users likely have a harder time falling asleep or different nighttime routines than the main userbase.
+
+```{r}
+ggplot(data=sleep_fixed, aes(x=TotalMinutesAsleep, y=TotalTimeInBed, color=Id)) + geom_point()
+```
+
+Combining the two table to ascertain whether there is any relation between a users activity for the day and the amount of time they slept.
+```{r}
+# Merge the two datasets into a single table
+combined_data <- merge(sleep_fixed, activity_fixed, by="Id", all=TRUE)
+# Make sure the number of Ids match up
+n_distinct(combined_data$Id)
+n_distinct(activity_fixed$Id)
+```
+The relationship between activity and sleep displayed as a boxplot with time slept grouped in intervals of 100 minutes for readability. There doesn't seem to be any evident relationship between the two variables.
+```{r}
+ggplot(data = combined_data, mapping = aes(x=TotalMinutesAsleep, y=TotalSteps)) +
+  geom_boxplot(mapping = aes(group = cut_width(TotalMinutesAsleep, 100), color = "red", fill = "orange", alpha = 0.2), na.rm = TRUE) +
+  theme(legend.position = "none")
+```
+
+  Next, total times at different activity levels will be analyzed to determine exactly how FitBit users are splitting their activity levels. By taking the mean of each activity level: very active, fairly active, and lightly active, we can get a breakdown of the general user's habits. Through the bar graph, we can see that the vast majority of active minutes is spent in the "Lightly Active" category. In fact, for the generalized user, the very and moderately active categories combined equate to less than an hour out of the users day. A potential inference from this summary is that, while most FitBit users may be health and fitness conscious, may are not performing athletic activity with any consistency.
+  
+  According to a study done by the American College of Rheumatology and their communications with Fitabase (a popular platform for exporting fitness data), FitBit's criteria for activity is derived from calculations performed on metabolic equivalent tasks (METs). A MET, another study done on it's relationship with exercise, is defined as "the amount of oxygen consumed while sitting at rest and is equal to 3.5 ml O2 per kg body weight x min."
+  
+  * Semanik, P., Lee, J., Pellegrini, C.A., Song, J., Dunlop, D.D. and Chang, R.W. (2020), Comparison of Physical Activity Measures Derived From the Fitbit Flex and the ActiGraph GT3X+ in an Employee Population With Chronic Knee Symptoms. ACR Open Rheumatology, 2: 48-52. https://doi.org/10.1002/acr2.11099
+  * Jetté M, Sidney K, Blümchen G. Metabolic equivalents (METS) in exercise testing, exercise prescription, and evaluation of functional capacity. Clin Cardiol. 1990 Aug;13(8):555-65. doi: 10.1002/clc.4960130809. PMID: 2204507.
+
+```{r activity means}
+# calculate the mean for each activity category
+mean_very_active <- mean(activity_fixed$VeryActiveMinutes)
+mean_fairly_active <- mean(activity_fixed$FairlyActiveMinutes)
+mean_lightly_active <- mean(activity_fixed$LightlyActiveMinutes)
+# organize the means into a tibble for ease of visualization
+activity_means <- tibble(active_names = c("Very Active", "Fairly Active", "Lightly Active"), minutes_active_mean = c(mean_very_active, mean_fairly_active, mean_lightly_active))
+# bar graph displaying the means
+ggplot(activity_means, aes(x = active_names, y = minutes_active_mean, fill = active_names)) +
+  geom_bar(alpha = 0.8, position = "dodge", stat = "identity")
+```
+
+```{r weight analysis}
+weight_table <- read_csv("Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
+# FIXIT: needs to group dates by week before plotting
+ggplot(weight_table, aes(x = Date, y = WeightPounds, group = Id, cut_width(Date, 7))) +
+  geom_line() +
+  geom_point()
+```
+
+
+## Recommendations
