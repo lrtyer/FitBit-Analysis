@@ -123,13 +123,21 @@ activity_means <- tibble(active_names = c("Very Active", "Fairly Active", "Light
 ggplot(activity_means, aes(x = active_names, y = minutes_active_mean, fill = active_names)) +
   geom_bar(alpha = 0.8, position = "dodge", stat = "identity")
 ```
+Trends in individual user weight show relatively stable values with little change across the month long period. However, significant weight loss is not usually seen in such a short span of time. It also remains unknown whether users were actively trying to adjust their weight as assumptions might usually dictate. More data and demographic information would be needed for further insight.
 
+What is apparent is the inconsistency in tracking overall. Only eight of the thirty three users involved in the study tracked their weight. Of those eight, only two were consistent in recording their values. Further research should be done into how to motive users to engage with this feature. 
 ```{r weight analysis}
 weight_table <- read_csv("Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
 # FIXIT: needs to group dates by week before plotting
-ggplot(weight_table, aes(x = Date, y = WeightPounds, group = Id, cut_width(Date, 7))) +
-  geom_line() +
-  geom_point()
+weight_table <- weight_table %>% mutate(Date = mdy_hms(weight_table$Date))
+str(weight_table)
+weight_table %>%
+  ggplot(aes(x = Date, y = WeightPounds, group = Id)) +
+    geom_line() +
+    geom_point()
+# number of participating users
+n_distinct(weight_table$Id)
+n_distinct(activity_fixed$Id)
 ```
 
 
