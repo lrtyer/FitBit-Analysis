@@ -379,6 +379,11 @@ specifically FitBit. By understanding how users engage with these
 devices and identifying potential areas of improvement, Bellabeat hopes
 to evolve and tailor their existing products to better suit the primary
 demographic of wellness technology wearers.</p>
+<p>Specifically, findings from this analysis will be used to provide
+recommendations to Bellabeat’s Time wellness tracker, a device that
+tracks the user’s activity, sleep, and stress, as well as the
+corresponding app which logs device data and informs users of their
+habits.</p>
 </div>
 <div id="data-preparation" class="section level2">
 <h2>Data Preparation</h2>
@@ -470,18 +475,6 @@ activity_table %&gt;%
 ##  Mean   : 7638   Mean   : 5.490   Mean   : 991.2  
 ##  3rd Qu.:10727   3rd Qu.: 7.713   3rd Qu.:1229.5  
 ##  Max.   :36019   Max.   :28.030   Max.   :1440.0</code></pre>
-<pre class="r"><code>sleep_table %&gt;%  
-  select(TotalSleepRecords,
-  TotalMinutesAsleep,
-  TotalTimeInBed) %&gt;%
-  summary()</code></pre>
-<pre><code>##  TotalSleepRecords TotalMinutesAsleep TotalTimeInBed 
-##  Min.   :1.00      Min.   : 58.0      Min.   : 61.0  
-##  1st Qu.:1.00      1st Qu.:361.0      1st Qu.:403.8  
-##  Median :1.00      Median :432.5      Median :463.0  
-##  Mean   :1.12      Mean   :419.2      Mean   :458.5  
-##  3rd Qu.:1.00      3rd Qu.:490.0      3rd Qu.:526.0  
-##  Max.   :3.00      Max.   :796.0      Max.   :961.0</code></pre>
 <pre class="r"><code># count of rows that suggests device wasn&#39;t worn for given day
 zero_steps_count &lt;- count(activity_table %&gt;%
   filter(TotalSteps == 0))
@@ -497,22 +490,18 @@ sedentary_max_percentage - zero_steps_percentage</code></pre>
 ## 1 0.212766</code></pre>
 <pre class="r"><code># find rows with the max sedentary minutes that somehow also have steps
 activity_table %&gt;%
-  filter(TotalSteps != 0 &amp; SedentaryMinutes == 1440)</code></pre>
-<pre><code>## # A tibble: 7 × 15
-##        Id ActivityDate TotalSteps TotalDistance TrackerDistance LoggedActivitie…
-##     &lt;dbl&gt; &lt;date&gt;            &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;            &lt;dbl&gt;
-## 1  4.32e9 2016-04-12         7753          5.20            5.20                0
-## 2  4.39e9 2016-04-12        10122          7.78            7.78                0
-## 3  8.58e9 2016-04-16         5319          4.15            4.15                0
-## 4  8.58e9 2016-04-17         3008          2.35            2.35                0
-## 5  8.58e9 2016-05-02         8469          6.61            6.61                0
-## 6  8.58e9 2016-05-03        12015          9.37            9.37                0
-## 7  8.58e9 2016-05-04         3588          2.80            2.80                0
-## # … with 9 more variables: VeryActiveDistance &lt;dbl&gt;,
-## #   ModeratelyActiveDistance &lt;dbl&gt;, LightActiveDistance &lt;dbl&gt;,
-## #   SedentaryActiveDistance &lt;dbl&gt;, VeryActiveMinutes &lt;dbl&gt;,
-## #   FairlyActiveMinutes &lt;dbl&gt;, LightlyActiveMinutes &lt;dbl&gt;,
-## #   SedentaryMinutes &lt;dbl&gt;, Calories &lt;dbl&gt;</code></pre>
+  filter(TotalSteps != 0 &amp; SedentaryMinutes == 1440) %&gt;%
+  select(Id, TotalSteps, SedentaryMinutes)</code></pre>
+<pre><code>## # A tibble: 7 × 3
+##           Id TotalSteps SedentaryMinutes
+##        &lt;dbl&gt;      &lt;dbl&gt;            &lt;dbl&gt;
+## 1 4319703577       7753             1440
+## 2 4388161847      10122             1440
+## 3 8583815059       5319             1440
+## 4 8583815059       3008             1440
+## 5 8583815059       8469             1440
+## 6 8583815059      12015             1440
+## 7 8583815059       3588             1440</code></pre>
 <p>When comparing steps taken to sedentary minutes, it appears that
 there isn’t necessarily an inverse relationship between the two. The
 data shows that during more sedentary days, users still often track
@@ -634,6 +623,19 @@ feature.</p>
 </div>
 <div id="recommendations" class="section level2">
 <h2>Recommendations</h2>
+<p>Based the activity summary statistics and weight logging, FitBit
+users show a noticable level of inconsistency in device usage. If
+Bellabeat wishes to capture higher levels of engagement than their
+competitors, notifications sent out through the app will likely be the
+best way to remind users to wear the wellness tracker. Reminders should
+be unobtrusive and follow-up user acceptance testing is suggested to
+identify effective strategies that don’t frustrate the user.</p>
+<p>Summary statistics also found some inconsistency in the way that
+FitBit is tracking steps. There were seven entries in the study where a
+user recorded the maximum amount of sedentary minutes in a day while
+simultaneously tracking steps. While initial assumptions may suggest
+that the steps taken could be low enough as to be completed in a minute,
+several of the entries recorded and excess of ten thousand steps.</p>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>

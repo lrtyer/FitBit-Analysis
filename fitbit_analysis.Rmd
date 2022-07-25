@@ -16,6 +16,7 @@ library(lubridate)
 
 Bellabeat wants to gain a greater foothold in the wearable fitness tracker marketplace by understanding how women use competing products. The company is interested in usage trends for competing products, specifically FitBit. By understanding how users engage with these devices and identifying potential areas of improvement, Bellabeat hopes to evolve and tailor their existing products to better suit the primary demographic of wellness technology wearers.
 
+Specifically, findings from this analysis will be used to provide recommendations to Bellabeat's Time wellness tracker, a device that tracks the user's activity, sleep, and stress, as well as the corresponding app which logs device data and informs users of their habits.
 
 ## Data Preparation
 
@@ -46,7 +47,7 @@ sum(duplicated(sleep_table))
 ## Analysis and Visualization
   Summary statistics for the activity_table table. Approximately 8.19% of entries contain a total of 0 steps, suggesting that the device was worn for the given day. Curiously, 0.21% (or 7 rows) of the observations record the daily maximum of sedentary minutes while also having tracked steps. The discrepancy could perhaps be do to the way the device calculates the two metrics.
   
-```{r Analysis}
+```{r activity analysis}
 # general table stats
 n_distinct(activity_table$Id)
 row_count <- nrow(activity_table)
@@ -55,12 +56,6 @@ activity_table %>%
   select(TotalSteps,
          TotalDistance,
          SedentaryMinutes) %>%
-  summary()
-
-sleep_table %>%  
-  select(TotalSleepRecords,
-  TotalMinutesAsleep,
-  TotalTimeInBed) %>%
   summary()
 # count of rows that suggests device wasn't worn for given day
 zero_steps_count <- count(activity_table %>%
@@ -75,7 +70,8 @@ sedentary_max_percentage <- (sedentary_max / row_count) * 100
 sedentary_max_percentage - zero_steps_percentage
 # find rows with the max sedentary minutes that somehow also have steps
 activity_table %>%
-  filter(TotalSteps != 0 & SedentaryMinutes == 1440)
+  filter(TotalSteps != 0 & SedentaryMinutes == 1440) %>%
+  select(Id, TotalSteps, SedentaryMinutes)
 ```
 
 When comparing steps taken to sedentary minutes, it appears that there isn't necessarily an inverse relationship between the two. The data shows that during more sedentary days, users still often track roughly similar steps as less sedentary days, suggesting that a lot of people likely have long periods of inactivity with bouts of movement in between. The data point coloring shows that rather than have two main clusters of separate users, each users tends to have varying activity.
@@ -170,6 +166,12 @@ weight_table %>%
 
 
 ## Recommendations
+
+Based the activity summary statistics and weight logging, FitBit users show a noticable level of inconsistency in device usage. If Bellabeat wishes to capture higher levels of engagement than their competitors, notifications sent out through the app will likely be the best way to remind users to wear the wellness tracker. Reminders should be unobtrusive and follow-up user acceptance testing is suggested to identify effective strategies that don't frustrate the user.  
+
+Summary statistics also found some inconsistency in the way that FitBit is tracking steps. There were seven entries in the study where a user recorded the maximum amount of sedentary minutes in a day while simultaneously tracking steps. Being completely sedentary for the entire day is not likely, suggesting that the device was not worn.  In the event that the user was sedentary for such a long amount of time, initial assumptions may suggest that the steps taken could be low enough as to be completed in a minute, however, several of the entries recorded an excess of ten thousand steps. There would appear to be some issue with the way FitBit's device is recording or calculating those two metrics. Further testing on Bellabeat's devices is recommended to ensure they don't suffer from the same inconsistency.  
+
+
 
 ## References
   1. Mobius, FitBit Fitness Tracker Data. Kaggle version. 2020. Web. 04 July 2022.
