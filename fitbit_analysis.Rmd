@@ -2,7 +2,10 @@
 title: "Bellabeat Case Study"
 author: "Levi Tyer"
 date: '2022-07-04'
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}
@@ -171,7 +174,11 @@ Based the activity summary statistics and weight logging, FitBit users show a no
 
 Summary statistics also found some inconsistency in the way that FitBit is tracking steps. There were seven entries in the study where a user recorded the maximum amount of sedentary minutes in a day while simultaneously tracking steps. Being completely sedentary for the entire day is not likely, suggesting that the device was not worn.  In the event that the user was sedentary for such a long amount of time, initial assumptions may suggest that the steps taken could be low enough as to be completed in a minute, however, several of the entries recorded an excess of ten thousand steps. There would appear to be some issue with the way FitBit's device is recording or calculating those two metrics. Further testing on Bellabeat's devices is recommended to ensure they don't suffer from the same inconsistency.  
 
+Comparison of user steps to sedentary time, along with the activity breakdown, suggest that the average user isn't necessarily leading an active lifestyle. Marketing initiatives should receive the largest returns by appealing to the health conscious consumer that leads a fairly typical lifestyle, rather than the active or athletic sectors.
 
+Effective tracking of user sleep patterns and making that information available to them seems to be a worthwhile investment. There were multiple instances where a user spent significantly more time in bed than asleep. Informing the user of these trends and providing helpful tips on how to achieve quality rest could be of great benefit to Bellabeat's consumers, increasing brand loyalty and the perception of the wellness tracker as a useful part of their lives.
+
+The weight tracking feature, however, was shown to be poorly utilized. Only a handful of the users in the study tracked their weight with even fewer doing it consistently. Thus, implementing this functionality into BellaBeat's products does not appear to be a worthwhile investment at this time.
 
 ## References
   1. Mobius, FitBit Fitness Tracker Data. Kaggle version. 2020. Web. 04 July 2022.
